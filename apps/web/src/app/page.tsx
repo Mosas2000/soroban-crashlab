@@ -81,7 +81,7 @@ export default function Home() {
           Bulletproof Your Soroban Smart Contracts
         </h1>
         <p className="text-xl leading-8 text-zinc-600 dark:text-zinc-400">
-          An advanced fuzzing and mutation testing framework designed to discover elusive edge cases in Stellar's Soroban ecosystem.
+          An advanced fuzzing and mutation testing framework designed to discover elusive edge cases in Stellar&apos;s Soroban ecosystem.
         </p>
       </div>
 
