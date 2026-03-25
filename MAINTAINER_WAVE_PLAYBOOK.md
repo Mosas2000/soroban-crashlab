@@ -7,6 +7,38 @@ This document defines how Soroban CrashLab is operated during Drips Wave cycles.
 - **Application Rejections**: Explicitly and quickly **reject** applicants who are not a fit or if we are waiting for a specific profile. Do not leave them pending; rejecting them immediately returns their application quota.
 - **24-Hour Review SLA Alert**: AI point appeals explicitly drop in when maintainers are unresponsive for >24 hours. Given our strict "Definition of Done", we risk automated points bypassing our review if we dawdle. Review inside 24h!
 
+## Issue triage board queries
+
+Use the following saved search queries to filter the issue board during triage.
+
+### Pending review
+
+Issues with open PRs awaiting maintainer review:
+
+```
+is:open is:issue label:wave3 linked:pr
+```
+
+### Stale
+
+Issues assigned but with no activity in the last 3 days:
+
+```
+is:open is:issue label:wave3 assignee:* updated:<YYYY-MM-DD>
+```
+
+Replace `<YYYY-MM-DD>` with a date 3 days before today. For example, if today is 2026-03-25, use `updated:<2026-03-22`.
+
+### Blocked
+
+Issues explicitly marked as blocked on dependencies or external factors:
+
+```
+is:open is:issue label:wave3 label:blocked
+```
+
+If the `blocked` label does not exist, create it with color `d93f0b` and description "Blocked on dependency or external factor".
+
 ## Pre-wave checklist
 
 1. Validate that each candidate issue has scope, acceptance criteria, and complexity.

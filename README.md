@@ -15,6 +15,9 @@ Most contract failures happen in edge cases that are not covered by manual tests
 
 - `apps/web`: Next.js frontend dashboard for runs, failures, and replay output
 - `contracts/crashlab-core`: Rust crate for core fuzzing and reproducible case generation
+- `docs/`: project documentation
+  - [`ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture and data flow
+  - [`REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md): deterministic guarantees and troubleshooting
 - `.github/ISSUE_TEMPLATE`: structured issue intake for maintainers and contributors
 - `ops/wave3-issues.tsv`: curated backlog for Wave 3 with 32 non-overlapping issues
 - `scripts/create-wave3-issues.sh`: script to publish backlog issues to GitHub

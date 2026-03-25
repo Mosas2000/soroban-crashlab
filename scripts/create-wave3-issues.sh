@@ -85,6 +85,7 @@ create_label "area:ops" "8250df" "Maintainer operations"
 create_label "area:security" "b60205" "Security policies"
 create_label "type:task" "d4c5f9" "Engineering task"
 create_label "type:feature" "a2eeef" "Feature work"
+create_label "blocked" "d93f0b" "Blocked on dependency or external factor"
 
 echo "Publishing curated issues from $ISSUE_FILE"
 
