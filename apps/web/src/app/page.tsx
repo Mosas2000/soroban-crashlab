@@ -18,6 +18,8 @@ const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
   cpuInstructions: Math.floor(400000 + Math.random() * 900000),
   memoryBytes: Math.floor(1_500_000 + Math.random() * 8_000_000),
   minResourceFee: Math.floor(500 + Math.random() * 5000),
+  area: 'auth' as any,
+  severity: 'low' as any,
   crashDetail: i % 4 === 1
     ? {
       failureCategory: i % 8 === 1 ? 'Panic' : 'InvariantViolation',
