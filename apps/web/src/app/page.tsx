@@ -9,34 +9,9 @@ import Pagination from './Pagination';
 import CrashDetailDrawer from './CrashDetailDrawer';
 import ReportModal from './ReportModal';
 import { generateMarkdownReport } from './report-utils';
+import CreateRunHeatmapPage55 from './create-run-heatmap-page-55';
 import { FuzzingRun, RunStatus } from './types';
-
-// Mock data for demonstration
-const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
-  id: `run-${1000 + i}`,
-  status: (['completed', 'failed', 'running', 'cancelled'][i % 4]) as RunStatus,
-  duration: 120000 + (Math.random() * 3600000), // 2m to 1h
-  seedCount: Math.floor(10000 + Math.random() * 90000),
-  cpuInstructions: Math.floor(400000 + Math.random() * 900000),
-  memoryBytes: Math.floor(1_500_000 + Math.random() * 8_000_000),
-  minResourceFee: Math.floor(500 + Math.random() * 5000),
-  crashDetail: i % 4 === 1
-    ? {
-      failureCategory: i % 8 === 1 ? 'Panic' : 'InvariantViolation',
-      signature: `sig:${1000 + i}:contract::transfer:assert_balance_nonnegative`,
-      payload: JSON.stringify({
-        contract: 'token',
-        method: 'transfer',
-        args: {
-          from: 'GABCD...1234',
-          to: 'GXYZ...7890',
-          amount: 999999999,
-        },
-      }, null, 2),
-      replayAction: `cargo run --bin crash-replay -- --run-id run-${1000 + i}`,
-    }
-    : null,
-})).reverse();
+import CrossRunBoardWidgets from './implement-cross-run-board-widgets-component';
 
 const ITEMS_PER_PAGE = 10;
 const CPU_WARNING = 900_000;
@@ -319,6 +294,10 @@ function HomeContent() {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 px-8 max-w-5xl mx-auto w-full">
+      {/* Cross-run board widgets section */}
+      <div className="w-full mb-12">
+        <CrossRunBoardWidgets />
+      </div>
       <div className="text-center max-w-3xl mb-16">
         <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Bulletproof Your Soroban Smart Contracts
@@ -575,6 +554,10 @@ function HomeContent() {
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
+      </div>
+
+      <div className="mb-8 w-full">
+        <CreateRunHeatmapPage55 />
       </div>
 
       {showDetailView && (
