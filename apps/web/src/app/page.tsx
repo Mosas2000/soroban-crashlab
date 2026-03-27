@@ -7,6 +7,9 @@ import RunHistoryTable from './RunHistoryTable';
 import RunHistoryTableSkeleton from './RunHistoryTableSkeleton';
 import Pagination from './Pagination';
 import CrashDetailDrawer from './CrashDetailDrawer';
+import ReportModal from './ReportModal';
+import { generateMarkdownReport } from './report-utils';
+import CreateRunHeatmapPage55 from './create-run-heatmap-page-55';
 import { FuzzingRun, RunStatus } from './types';
 
 // Mock data for demonstration
@@ -106,6 +109,7 @@ function HomeContent() {
   const [showDetailView, setShowDetailView] = useState(false);
   const [showHelp, setShowHelp] = useState(true);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [reportRun, setReportRun] = useState<FuzzingRun | null>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
 
   const selectedRunId = searchParams.get('run');
@@ -318,6 +322,10 @@ function HomeContent() {
 
   return (
     <div className="flex flex-col items-center justify-center py-20 px-8 max-w-5xl mx-auto w-full">
+      {/* Cross-run board widgets section */}
+      <div className="w-full mb-12">
+        <CrossRunBoardWidgets />
+      </div>
       <div className="text-center max-w-3xl mb-16">
         <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Bulletproof Your Soroban Smart Contracts
@@ -542,7 +550,7 @@ function HomeContent() {
             </ul>
           )}
         </div>
-        <RunHistoryTable runs={paginatedRuns} onSelectRun={handleOpenRunDrawer} />
+        <RunHistoryTable runs={paginatedRuns} onSelectRun={handleOpenRunDrawer} onViewReport={setReportRun} />
         {dataState === 'loading' && (
           <RunHistoryTableSkeleton rows={ITEMS_PER_PAGE} />
         )}
@@ -574,6 +582,10 @@ function HomeContent() {
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
+      </div>
+
+      <div className="mb-8 w-full">
+        <CreateRunHeatmapPage55 />
       </div>
 
       {showDetailView && (
@@ -629,6 +641,15 @@ function HomeContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {reportRun && (
+        <ReportModal
+          isOpen={true}
+          onClose={() => setReportRun(null)}
+          markdown={generateMarkdownReport(reportRun)}
+          runId={reportRun.id}
+        />
       )}
 
       {selectedRun && (
