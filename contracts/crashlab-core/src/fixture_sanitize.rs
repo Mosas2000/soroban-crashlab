@@ -7,18 +7,17 @@ use crate::bundle_persist::{BundlePersistError, CASE_BUNDLE_SCHEMA_VERSION, Case
 use crate::scenario_export::FailureScenario;
 use crate::{CaseBundle, CaseSeed, classify};
 
-const SENSITIVE_MARKERS: &[&[u8]] = &[
-    b"authorization:",
-    b"authorization=",
-    b"bearer ",
-    b"token=",
-    b"api_key=",
-    b"apikey=",
-    b"password=",
-    b"secret=",
-    b"session=",
-    b"cookie:",
-    b"cookie=",
+const SENSITIVE_KEYS: &[&[u8]] = &[
+    b"authorization",
+    b"token",
+    b"api_key",
+    b"apikey",
+    b"x-api-key",
+    b"password",
+    b"secret",
+    b"session",
+    b"cookie",
+    b"set-cookie",
 ];
 
 fn is_value_delimiter(byte: u8) -> bool {
@@ -28,15 +27,53 @@ fn is_value_delimiter(byte: u8) -> bool {
     )
 }
 
-fn marker_match(bytes: &[u8], start: usize) -> Option<&'static [u8]> {
-    SENSITIVE_MARKERS.iter().copied().find(|marker| {
-        let end = start + marker.len();
-        end <= bytes.len() && bytes[start..end].eq_ignore_ascii_case(marker)
+fn key_match(bytes: &[u8], start: usize) -> Option<&'static [u8]> {
+    SENSITIVE_KEYS.iter().copied().find(|key| {
+        let end = start + key.len();
+        end <= bytes.len() && bytes[start..end].eq_ignore_ascii_case(key)
     })
 }
 
-fn should_preserve_first_value_byte(marker: &[u8]) -> bool {
-    marker.eq_ignore_ascii_case(b"bearer ")
+fn parse_value_start(payload: &[u8], key_start: usize, key: &[u8]) -> Option<(usize, bool)> {
+    let mut index = key_start + key.len();
+    let mut quoted_key = false;
+
+    if payload.get(index) == Some(&b'"') {
+        quoted_key = true;
+        index += 1;
+    }
+
+    while payload.get(index).is_some_and(|b| b.is_ascii_whitespace()) {
+        index += 1;
+    }
+
+    match payload.get(index)? {
+        b'=' | b':' => index += 1,
+        _ => return None,
+    }
+
+    while payload.get(index).is_some_and(|b| b.is_ascii_whitespace()) {
+        index += 1;
+    }
+
+    let mut quoted_value = false;
+    if payload.get(index) == Some(&b'"') {
+        quoted_value = true;
+        index += 1;
+    }
+
+    if payload[key_start..key_start + key.len()].eq_ignore_ascii_case(b"authorization")
+        && payload[index..]
+            .get(..7)
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case(b"bearer "))
+    {
+        index += 7;
+        if index < payload.len() {
+            index += 1;
+        }
+    }
+
+    Some((index, quoted_key || quoted_value))
 }
 
 /// Replaces secret-like value fragments with `x` bytes while preserving payload
@@ -46,23 +83,20 @@ pub fn sanitize_payload_fragments(payload: &[u8]) -> Vec<u8> {
     let mut index = 0;
 
     while index < payload.len() {
-        let Some(marker) = marker_match(payload, index) else {
+        let Some(key) = key_match(payload, index) else {
             index += 1;
             continue;
         };
 
-        let value_start = index + marker.len();
-        let mut value_index = value_start;
-        if value_index >= payload.len() {
-            break;
-        }
+        let Some((mut value_index, quoted_value)) = parse_value_start(payload, index, key) else {
+            index += 1;
+            continue;
+        };
 
-        let preserve_first = should_preserve_first_value_byte(marker);
-        if preserve_first {
-            value_index += 1;
-        }
-
-        while value_index < payload.len() && !is_value_delimiter(payload[value_index]) {
+        while value_index < payload.len()
+            && !is_value_delimiter(payload[value_index])
+            && !(quoted_value && payload[value_index] == b'"')
+        {
             sanitized[value_index] = b'x';
             value_index += 1;
         }
@@ -147,6 +181,21 @@ mod tests {
     }
 
     #[test]
+    fn sanitizes_json_style_secret_values_in_seed_payloads() {
+        let seed = CaseSeed {
+            id: 8,
+            payload: br#"{"user":"demo","token":"abcd1234","mode":"replay"}"#.to_vec(),
+        };
+
+        let sanitized = sanitize_seed_for_sharing(&seed);
+
+        assert_eq!(
+            String::from_utf8(sanitized.payload).unwrap(),
+            r#"{"user":"demo","token":"xxxxxxxx","mode":"replay"}"#
+        );
+    }
+
+    #[test]
     fn sanitizes_header_style_secrets_in_failure_payloads() {
         let bundle = CaseBundle {
             seed: CaseSeed {
@@ -166,6 +215,33 @@ mod tests {
         assert_eq!(
             String::from_utf8(sanitized.failure_payload).unwrap(),
             "Authorization: Bearer sxxxxxxxxxxxxxxxxx\npanic: trap"
+        );
+    }
+
+    #[test]
+    fn sanitizes_set_cookie_and_api_key_style_fragments() {
+        let bundle = CaseBundle {
+            seed: CaseSeed {
+                id: 12,
+                payload: b"x-api-key: abcdef123456".to_vec(),
+            },
+            signature: classify(&CaseSeed {
+                id: 12,
+                payload: b"x-api-key: abcdef123456".to_vec(),
+            }),
+            environment: None,
+            failure_payload: b"Set-Cookie: session=abc123; Path=/".to_vec(),
+        };
+
+        let sanitized = sanitize_bundle_for_sharing(&bundle);
+
+        assert_eq!(
+            String::from_utf8(sanitized.seed.payload).unwrap(),
+            "x-api-key: xxxxxxxxxxxx"
+        );
+        assert_eq!(
+            String::from_utf8(sanitized.failure_payload).unwrap(),
+            "Set-Cookie: xxxxxxxxxxxxxx; Path=/"
         );
     }
 
@@ -210,6 +286,35 @@ mod tests {
         assert!(!json.contains("abcd1234"));
         assert!(!json.contains("session-123"));
         assert!(json.contains("\"schema\""));
+    }
+
+    #[test]
+    fn sanitized_exports_preserve_lengths_for_shared_fixture_pipeline() {
+        let bundle = CaseBundle {
+            seed: CaseSeed {
+                id: 15,
+                payload: br#"{"token":"abcd1234","cookie":"session-123"}"#.to_vec(),
+            },
+            signature: classify(&CaseSeed {
+                id: 15,
+                payload: br#"{"token":"abcd1234","cookie":"session-123"}"#.to_vec(),
+            }),
+            environment: None,
+            failure_payload: b"Authorization: Bearer super-secret-token".to_vec(),
+        };
+
+        let sanitized_bundle = sanitize_bundle_for_sharing(&bundle);
+        let scenario = sanitized_failure_scenario(&bundle, "public");
+
+        assert_eq!(sanitized_bundle.seed.payload.len(), bundle.seed.payload.len());
+        assert_eq!(
+            sanitized_bundle.failure_payload.len(),
+            bundle.failure_payload.len()
+        );
+        assert_eq!(
+            hex::decode(&scenario.input_payload).unwrap(),
+            sanitized_bundle.seed.payload
+        );
     }
 
     #[test]
