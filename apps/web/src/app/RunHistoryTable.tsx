@@ -7,6 +7,8 @@ interface RunHistoryTableProps {
     runs: FuzzingRun[];
     /** Called when a row is selected to open crash details */
     onSelectRun: (runId: string) => void;
+    /** Called when the report button is clicked for a run */
+    onViewReport: (run: FuzzingRun) => void;
 }
 
 /**
@@ -49,7 +51,7 @@ const StatusBadge = ({ status }: { status: RunStatus }) => {
 /**
  * Table component for displaying a list of fuzzing runs.
  */
-export default function RunHistoryTable({ runs, onSelectRun }: RunHistoryTableProps) {
+export default function RunHistoryTable({ runs, onSelectRun, onViewReport }: RunHistoryTableProps) {
     if (runs.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-xl bg-zinc-50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-800">
@@ -69,6 +71,7 @@ export default function RunHistoryTable({ runs, onSelectRun }: RunHistoryTablePr
                             <th className="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Status</th>
                             <th className="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100 text-right">Duration</th>
                             <th className="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100 text-right">Seed Count</th>
+                            <th className="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100 text-right">Report</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -105,6 +108,19 @@ export default function RunHistoryTable({ runs, onSelectRun }: RunHistoryTablePr
                                 </td>
                                 <td className="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400 text-right tabular-nums">
                                     {run.seedCount.toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onViewReport(run);
+                                        }}
+                                        className="text-xs font-medium px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                                        aria-label={`View markdown report for ${run.id}`}
+                                    >
+                                        View Report
+                                    </button>
                                 </td>
                             </tr>
                         ))}
