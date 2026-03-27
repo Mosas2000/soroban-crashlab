@@ -7,15 +7,20 @@ import RunHistoryTable from './RunHistoryTable';
 import RunHistoryTableSkeleton from './RunHistoryTableSkeleton';
 import Pagination from './Pagination';
 import CrashDetailDrawer from './CrashDetailDrawer';
+import { FuzzingRun, RunStatus, RunArea, RunSeverity } from './types';
 import ReportModal from './ReportModal';
 import { generateMarkdownReport } from './report-utils';
 import CreateRunHeatmapPage55 from './create-run-heatmap-page-55';
 import { FuzzingRun, RunStatus } from './types';
+import CrossRunBoardWidgets from './implement-cross-run-board-widgets-component';
+import RunClusterVisualization from './add-run-cluster-visualization';
 
 // Mock data for demonstration
 const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
   id: `run-${1000 + i}`,
   status: (['completed', 'failed', 'running', 'cancelled'][i % 4]) as RunStatus,
+  area: (['auth', 'state', 'budget', 'xdr'][i % 4]) as RunArea,
+  severity: (['low', 'medium', 'high', 'critical'][i % 4]) as RunSeverity,
   duration: 120000 + (Math.random() * 3600000), // 2m to 1h
   seedCount: Math.floor(10000 + Math.random() * 90000),
   cpuInstructions: Math.floor(400000 + Math.random() * 900000),
@@ -69,10 +74,14 @@ const buildMockRuns = () =>
   Array.from({ length: 25 }, (_, i) => {
     const id = 1000 + i;
     const status = (['completed', 'failed', 'running', 'cancelled'][i % 4]) as RunStatus;
+    const area = (['auth', 'state', 'budget', 'xdr'][i % 4]) as RunArea;
+    const severity = (['low', 'medium', 'high', 'critical'][i % 4]) as RunSeverity;
 
     return {
       id: `run-${id}`,
       status,
+      area,
+      severity,
       duration: 120_000 + i * 95_000,
       seedCount: 10_000 + i * 1_250,
       cpuInstructions: 450_000 + i * 28_500,
@@ -326,6 +335,12 @@ function HomeContent() {
       <div className="w-full mb-12">
         <CrossRunBoardWidgets />
       </div>
+
+      {/* Run cluster visualization section */}
+      <div className="w-full mb-12">
+        <RunClusterVisualization runs={runs} />
+      </div>
+
       <div className="text-center max-w-3xl mb-16">
         <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Bulletproof Your Soroban Smart Contracts
