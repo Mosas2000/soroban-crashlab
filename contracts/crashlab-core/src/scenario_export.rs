@@ -70,6 +70,40 @@ pub fn export_scenario_json(
     serde_json::to_string_pretty(&scenario)
 }
 
+/// Exports a collection of bundles as a deterministically ordered JSON suite.
+///
+/// Scenarios are sorted by `(seed_id, failure_class)` before serialization so
+/// that consecutive exports of the same bundle set always produce byte-identical
+/// output regardless of the order in which bundles were collected.
+///
+/// # Example
+///
+/// ```rust
+/// use crashlab_core::{to_bundle, CaseSeed};
+/// use crashlab_core::scenario_export::export_suite_json;
+///
+/// let b1 = to_bundle(CaseSeed { id: 2, payload: vec![0xA0] });
+/// let b2 = to_bundle(CaseSeed { id: 1, payload: vec![1, 2, 3] });
+/// let json_forward = export_suite_json(&[b1.clone(), b2.clone()], "invoker").unwrap();
+/// let json_reverse = export_suite_json(&[b2, b1], "invoker").unwrap();
+/// assert_eq!(json_forward, json_reverse);
+/// ```
+pub fn export_suite_json(
+    bundles: &[CaseBundle],
+    mode: impl Into<String> + Clone,
+) -> Result<String, serde_json::Error> {
+    let mut scenarios: Vec<FailureScenario> = bundles
+        .iter()
+        .map(|b| FailureScenario::from_bundle(b, mode.clone()))
+        .collect();
+    scenarios.sort_by(|a, b| {
+        a.seed_id
+            .cmp(&b.seed_id)
+            .then_with(|| a.failure_class.cmp(&b.failure_class))
+    });
+    serde_json::to_string_pretty(&scenarios)
+}
+
 /// Exports a crash report in Markdown for issue attachments.
 ///
 /// Includes signature context and a replay command section.
@@ -276,6 +310,56 @@ mod tests {
         assert_eq!(scenario_invoker.mode, "invoker");
         assert_eq!(scenario_contract.mode, "contract");
         assert_eq!(scenario_none.mode, "none");
+    }
+
+    #[test]
+    fn suite_export_is_deterministic_regardless_of_input_order() {
+        let b1 = to_bundle(CaseSeed {
+            id: 2,
+            payload: vec![0xA0],
+        });
+        let b2 = to_bundle(CaseSeed {
+            id: 1,
+            payload: vec![1, 2, 3],
+        });
+
+        let json_forward = export_suite_json(&[b1.clone(), b2.clone()], "invoker").unwrap();
+        let json_reverse = export_suite_json(&[b2, b1], "invoker").unwrap();
+
+        assert_eq!(
+            json_forward, json_reverse,
+            "suite export must be byte-identical regardless of bundle input order"
+        );
+    }
+
+    #[test]
+    fn suite_export_orders_by_seed_id_ascending() {
+        let b1 = to_bundle(CaseSeed {
+            id: 10,
+            payload: vec![1],
+        });
+        let b2 = to_bundle(CaseSeed {
+            id: 5,
+            payload: vec![1],
+        });
+        let b3 = to_bundle(CaseSeed {
+            id: 1,
+            payload: vec![1],
+        });
+
+        let json = export_suite_json(&[b1, b2, b3], "none").unwrap();
+        let parsed: Vec<FailureScenario> = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(parsed[0].seed_id, 1);
+        assert_eq!(parsed[1].seed_id, 5);
+        assert_eq!(parsed[2].seed_id, 10);
+    }
+
+    #[test]
+    fn suite_export_empty_slice_produces_empty_array() {
+        let json = export_suite_json(&[], "invoker").unwrap();
+        let parsed: Vec<FailureScenario> = serde_json::from_str(&json).unwrap();
+        assert!(parsed.is_empty());
     }
 
     #[test]

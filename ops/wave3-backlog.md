@@ -23,6 +23,7 @@ This backlog is intentionally scoped for contributor onboarding and maintainer t
 ## Completed
 
 - **Duplicate crash de-dup index** (`area:generator`): Added `crash_index` module with `CrashIndex`, `CrashGroup`, and `CrashIndexSummary`. Groups repeated failures by `signature_hash`, tracks hit count and newest sample per group. `CrashIndexSummary::to_cli_table()` renders grouped counts and newest seed for CLI/dashboard consumption.
+- **Deterministic suite export ordering** (`area:generator`, #61): Added `export_suite_json` to `scenario_export` module. Sorts `FailureScenario` entries by `(seed_id, failure_class)` before serialization so consecutive exports of the same bundle set are byte-identical regardless of input order.
 
 ## Maintainer note
 
