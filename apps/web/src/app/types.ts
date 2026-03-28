@@ -19,6 +19,13 @@ export interface CrashDetail {
     replayAction: string;
 }
 
+export interface RunIssueLink {
+    /** Display label for the issue reference */
+    label: string;
+    /** Fully qualified URL for the issue */
+    href: string;
+}
+
 /**
  * Interface representing a single fuzzing run.
  */
@@ -43,6 +50,14 @@ export interface FuzzingRun {
     memoryBytes: number;
     /** Minimum resource fee measured for the run */
     minResourceFee: number;
+    /** Timestamp when the run was queued */
+    queuedAt?: string;
+    /** Timestamp when the run started */
+    startedAt?: string;
+    /** Timestamp when the run reached a final state */
+    finishedAt?: string;
+    /** Related issue tracker entries for the run */
+    associatedIssues?: RunIssueLink[];
 }
 
 export type LedgerChangeType = 'created' | 'updated' | 'deleted';
