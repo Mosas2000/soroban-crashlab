@@ -38,6 +38,12 @@ impl SeededPrng {
         Self { state }
     }
 
+    /// Returns a deterministic float in `[0, 1)` (53-bit precision) for jitter and sampling.
+    pub fn next_f64(&mut self) -> f64 {
+        const SCALE: f64 = 1.0 / (1u64 << 53) as f64;
+        (self.next_u64() >> 11) as f64 * SCALE
+    }
+
     /// Advances the PRNG state and returns the next 64-bit value.
     pub fn next_u64(&mut self) -> u64 {
         // xorshift64*

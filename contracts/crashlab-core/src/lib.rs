@@ -57,6 +57,20 @@ pub use artifact_compress::{compress_artifact, decompress_artifact};
 pub mod fixture_compat;
 pub use fixture_compat::{check_bundle_fixtures, check_seed_fixtures, CompatReport, CompatWarning};
 
+pub mod fixture_manifest;
+pub use fixture_manifest::{
+    FixtureManifest, FixtureMetadata, ManifestError, FIXTURE_MANIFEST_SCHEMA_VERSION,
+};
+
+pub mod fixture_linter;
+pub use fixture_linter::{FixtureLinter, LintConfig, LintIssue, LintLevel, LintReport, LinterError};
+
+pub mod signature_comparison;
+pub use signature_comparison::{
+    compare_signatures, ComparisonError, ComparisonMetrics, SignatureComparisonResult,
+    SignatureInfo, SignatureSnapshot,
+};
+
 pub mod fixture_sanitize;
 pub use fixture_sanitize::{
     export_sanitized_scenario_json, sanitize_bundle_document_for_sharing,
