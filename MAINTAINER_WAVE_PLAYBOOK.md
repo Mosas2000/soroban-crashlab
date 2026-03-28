@@ -66,6 +66,27 @@ Review inside 24 hours to prevent unnecessary automated appeals. Review in this 
 4. Test coverage
 5. Clarity and maintainability
 
+## Unblocking contributor failures
+
+When a contributor is blocked on local setup, build, test, or replay issues,
+point them to the
+[`CONTRIBUTING.md` debugging playbook](CONTRIBUTING.md#contributor-debugging-playbook)
+before asking for a broad rewrite or a large debug dump.
+
+Ask them to paste:
+
+```bash
+git status --short
+node -v
+npm -v
+rustc -V
+cargo -V
+```
+
+Plus the exact failing command and the first relevant error block. This keeps
+triage focused on environment drift, dependency install problems, and replay
+environment mismatches instead of guesswork.
+
 ## Security Policy
 
 The project's coordinated vulnerability disclosure process and response expectations are defined in [`.github/SECURITY.md`](.github/SECURITY.md). Maintainers are responsible for triaging incoming reports within the timelines specified there.

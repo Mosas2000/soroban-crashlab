@@ -32,6 +32,8 @@ If this is your first time setting up the repo locally, start with the
 [contributor setup checklist](CONTRIBUTING.md#local-setup-checklist).
 It walks through installing Git, Node.js, npm, Rust, and optional GitHub
 tooling before you run the project checks below.
+If setup, build, test, or replay commands fail locally, jump to the
+[contributor debugging playbook](CONTRIBUTING.md#contributor-debugging-playbook).
 
 ### Prerequisites
 
