@@ -7,11 +7,47 @@ import RunHistoryTable from './RunHistoryTable';
 import RunHistoryTableSkeleton from './RunHistoryTableSkeleton';
 import Pagination from './Pagination';
 import CrashDetailDrawer from './CrashDetailDrawer';
+import { FuzzingRun, RunStatus } from './types';
 import ReportModal from './ReportModal';
 import { generateMarkdownReport } from './report-utils';
 import CreateRunHeatmapPage55 from './create-run-heatmap-page-55';
+import AlertingSettingsPage54 from './implement-alerting-settings-page-54';
 import { FuzzingRun, RunStatus } from './types';
 import CrossRunBoardWidgets from './implement-cross-run-board-widgets-component';
+import CrossRunBoardCustomWidgets from './create-cross-run-board-custom-widgets-63';
+import RunClusterVisualization from './add-run-cluster-visualization';
+import RunClusterOverview from './add-run-cluster-overview';
+
+// Mock data for demonstration
+const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
+  id: `run-${1000 + i}`,
+  status: (['completed', 'failed', 'running', 'cancelled'][i % 4]) as RunStatus,
+  area: (['auth', 'state', 'budget', 'xdr'][i % 4]) as RunArea,
+  severity: (['low', 'medium', 'high', 'critical'][i % 4]) as RunSeverity,
+  duration: 120000 + (Math.random() * 3600000), // 2m to 1h
+  seedCount: Math.floor(10000 + Math.random() * 90000),
+  cpuInstructions: Math.floor(400000 + Math.random() * 900000),
+  memoryBytes: Math.floor(1_500_000 + Math.random() * 8_000_000),
+  minResourceFee: Math.floor(500 + Math.random() * 5000),
+  area: 'auth' as any,
+  severity: 'low' as any,
+  crashDetail: i % 4 === 1
+    ? {
+      failureCategory: i % 8 === 1 ? 'Panic' : 'InvariantViolation',
+      signature: `sig:${1000 + i}:contract::transfer:assert_balance_nonnegative`,
+      payload: JSON.stringify({
+        contract: 'token',
+        method: 'transfer',
+        args: {
+          from: 'GABCD...1234',
+          to: 'GXYZ...7890',
+          amount: 999999999,
+        },
+      }, null, 2),
+      replayAction: `cargo run --bin crash-replay -- --run-id run-${1000 + i}`,
+    }
+    : null,
+})).reverse();
 
 const ITEMS_PER_PAGE = 10;
 const CPU_WARNING = 900_000;
@@ -36,39 +72,6 @@ const toStableQueryString = (params: URLSearchParams): string => {
   const sorted = Array.from(params.entries()).sort(([a], [b]) => a.localeCompare(b));
   return new URLSearchParams(sorted).toString();
 };
-
-const buildMockRuns = () =>
-  Array.from({ length: 25 }, (_, i) => {
-    const id = 1000 + i;
-    const status = (['completed', 'failed', 'running', 'cancelled'][i % 4]) as RunStatus;
-
-    return {
-      id: `run-${id}`,
-      status,
-      duration: 120_000 + i * 95_000,
-      seedCount: 10_000 + i * 1_250,
-      cpuInstructions: 450_000 + i * 28_500,
-      memoryBytes: 1_800_000 + i * 230_000,
-      minResourceFee: 600 + i * 170,
-      crashDetail:
-        status === 'failed'
-          ? {
-              failureCategory: i % 2 === 0 ? 'Panic' : 'InvariantViolation',
-              signature: `sig:${id}:contract::transfer:assert_balance_nonnegative`,
-              payload: JSON.stringify(
-                {
-                  contract: 'token',
-                  method: 'transfer',
-                  args: { from: 'GABCD...1234', to: 'GXYZ...7890', amount: 999999999 },
-                },
-                null,
-                2,
-              ),
-              replayAction: `cargo run --bin crash-replay -- --run-id run-${id}`,
-            }
-          : null,
-    };
-  }).reverse() as unknown as FuzzingRun[];
 
 function HomeContent() {
   const router = useRouter();
@@ -126,6 +129,10 @@ function HomeContent() {
       return true;
     });
   }, [runs, statusFilter, expensiveOnly]);
+  const stableQueryString = useMemo(
+    () => toStableQueryString(new URLSearchParams(searchParams.toString())),
+    [searchParams],
+  );
 
   const totalPages = Math.max(1, Math.ceil(filteredRuns.length / ITEMS_PER_PAGE));
   const clampedPage = Math.min(currentPage, totalPages);
@@ -297,7 +304,9 @@ function HomeContent() {
       {/* Cross-run board widgets section */}
       <div className="w-full mb-12">
         <CrossRunBoardWidgets />
+        <CrossRunBoardCustomWidgets runs={runs} />
       </div>
+
       <div className="text-center max-w-3xl mb-16">
         <h1 className="text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Bulletproof Your Soroban Smart Contracts
@@ -522,6 +531,7 @@ function HomeContent() {
             </ul>
           )}
         </div>
+        <FailureClusterView runs={runs} pathname={pathname} queryString={stableQueryString} />
         <RunHistoryTable runs={paginatedRuns} onSelectRun={handleOpenRunDrawer} onViewReport={setReportRun} />
         {dataState === 'loading' && (
           <RunHistoryTableSkeleton rows={ITEMS_PER_PAGE} />
@@ -556,8 +566,12 @@ function HomeContent() {
         />
       </div>
 
-      <div className="mb-8 w-full">
+      <div className="mb-12 w-full">
         <CreateRunHeatmapPage55 />
+      </div>
+
+      <div className="mb-12 w-full">
+        <AlertingSettingsPage54 />
       </div>
 
       {showDetailView && (

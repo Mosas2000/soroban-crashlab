@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import type { LedgerStateChange } from '../../types';
+import type { LedgerStateChange, RunStatus } from '../../types';
+import RunStatusTimeline from '../../create-run-status-timeline-component-52';
 
 interface RunDetailPageProps {
     params: Promise<{ id: string }>;
@@ -60,6 +61,15 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                     >
                         Back to Dashboard
                     </Link>
+                </div>
+
+                <div className="mb-8">
+                    <RunStatusTimeline 
+                        status="failed" 
+                        queuedAt="2024-03-27T10:00:00Z" 
+                        startedAt="2024-03-27T10:00:15Z" 
+                        finishedAt="2024-03-27T10:15:30Z" 
+                    />
                 </div>
 
                 <section className="mb-8 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 bg-amber-50/60 dark:bg-amber-950/20">
