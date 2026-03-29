@@ -39,14 +39,7 @@ import AddRunStatusTimeline from './add-run-status-timeline';
 import AddExportRunJson from './add-export-run-json';
 import AddExportRunCsv from './add-export-run-csv';
 import IntegrateWebhookManagerForRunEvents from './integrate-webhook-manager-for-run-events';
-import MetricsExportToPrometheus from './integrate-metrics-export-to-prometheus';
-import LogViewer from './implement-log-viewer-component';
-import AddAccessibleKeyboardNavBlueprint from './add-accessible-keyboard-nav-blueprint';
-import ArtifactExplorer from './add-artifact-explorer';
-import RunSeverityFilter from './add-run-filtering-by-severity';
-import AddRunTimeline from './add-run-timeline';
-import OnboardingChecklistModal from './implement-onboarding-checklist-modal-component';
-import FailureClassificationTaxonomy from './add-failure-classification-taxonomy';
+import AddKeyboardNavigationHelp from './add-keyboard-navigation-help';
 
 // Mock data for demonstration
 const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
@@ -112,8 +105,6 @@ function HomeContent() {
   const [fetchAttempt, setFetchAttempt] = useState(0);
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [showDetailView, setShowDetailView] = useState(false);
-  const [showHelp, setShowHelp] = useState(true);
-  const [showOnboardingChecklist, setShowOnboardingChecklist] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [reportRun, setReportRun] = useState<FuzzingRun | null>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
@@ -357,10 +348,6 @@ function HomeContent() {
             setShowDetailView(false);
           }
           break;
-        case '?':
-          e.preventDefault();
-          setShowHelp((prev) => !prev);
-          break;
       }
     };
 
@@ -394,7 +381,7 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen w-full">
-      <AddAccessibleKeyboardNavBlueprint />
+      <AddKeyboardNavigationHelp />
       <div id="main-content" className="flex flex-col items-center justify-center py-20 px-8 max-w-5xl mx-auto w-full">
       {/* Role toggle */}
       <div className="w-full flex flex-wrap justify-end gap-3 mb-6">
@@ -436,96 +423,6 @@ function HomeContent() {
         </p>
       </div>
 
-      {showHelp && (
-        <div className="mb-8 w-full max-w-3xl border border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-950/30">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Keyboard Shortcuts</h3>
-              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <div><kbd className="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-blue-300 dark:border-blue-700 text-xs">↑</kbd> / <kbd className="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-blue-300 dark:border-blue-700 text-xs">↓</kbd> Navigate cards</div>
-                <div><kbd className="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-blue-300 dark:border-blue-700 text-xs">Enter</kbd> Open details</div>
-                <div><kbd className="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-blue-300 dark:border-blue-700 text-xs">Esc</kbd> Close details</div>
-                <div><kbd className="px-2 py-1 bg-white dark:bg-zinc-800 rounded border border-blue-300 dark:border-blue-700 text-xs">?</kbd> Toggle this help</div>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowHelp(false)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
-              aria-label="Close help"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Create Campaign */}
-            <div className="border border-blue-200 dark:border-blue-800 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Create Your First Campaign</h3>
-              </div>
-              <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                Set up a fuzzing campaign to start testing your smart contracts for edge cases and vulnerabilities.
-              </p>
-              <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
-                Create Campaign
-              </button>
-            </div>
-
-            {/* Card 2: Read Docs */}
-            <div className="border border-purple-200 dark:border-purple-800 rounded-xl p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-lg bg-purple-600 dark:bg-purple-500 flex items-center justify-center text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Read the Documentation</h3>
-              </div>
-              <p className="text-sm text-purple-800 dark:text-purple-200 mb-4">
-                Learn how to configure campaigns, write invariants, and interpret fuzzing results.
-              </p>
-              <a
-                href="https://github.com/SorobanCrashLab/soroban-crashlab#readme"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition text-center"
-              >
-                View Docs
-              </a>
-            </div>
-
-            {/* Card 3: View Examples */}
-            <div className="border border-green-200 dark:border-green-800 rounded-xl p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-lg bg-green-600 dark:bg-green-500 flex items-center justify-center text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">View Examples</h3>
-              </div>
-              <p className="text-sm text-green-800 dark:text-green-200 mb-4">
-                Explore example contracts and campaigns to understand best practices and common patterns.
-              </p>
-              <a
-                href="https://github.com/SorobanCrashLab/soroban-crashlab/tree/main/contracts"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition text-center"
-              >
-                Browse Examples
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div
         ref={cardsContainerRef}
@@ -949,7 +846,8 @@ function HomeContent() {
       </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default function Home() {
