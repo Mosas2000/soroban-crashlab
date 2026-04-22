@@ -10,8 +10,8 @@ import CrashDetailDrawer from './CrashDetailDrawer';
 import { FuzzingRun, RunStatus, RunArea, RunSeverity } from './types';
 import ReportModal from './ReportModal';
 import { generateMarkdownReport } from './report-utils';
-import CreateRunHeatmapPage55 from './create-run-heatmap-page-55';
 import AddRunComparisonCharts from './add-run-comparison-charts';
+import AddRunComparison from './add-run-comparison';
 import AddTaggingAndLabelsUi from './add-tagging-and-labels-ui';
 import AlertingSettingsPage54 from './implement-alerting-settings-page-54';
 import AlertingSettingsPage from './create-alerting-settings-page-page';
@@ -688,6 +688,9 @@ function HomeContent() {
         <AddRunComparisonCharts runs={filteredRuns} />
       </div>
 
+      <div className="mb-12 w-full">
+        <AddRunComparison runs={filteredRuns} />
+      </div>
       <div className="mb-12 w-full">
         <RunClusterVisualization 
           runs={filteredRuns} 
