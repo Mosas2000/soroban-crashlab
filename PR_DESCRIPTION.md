@@ -1,43 +1,94 @@
-# chore(web): add run cluster overview states and accessibility
+# feat: improve runtime replay and retention controls
 
-Closes #501
+Closes #428
+Closes #429
+Closes #430
+Closes #431
 
 ## Summary
 
-This PR completes the Run cluster overview behavior in the dashboard with explicit UI states, deterministic risk insight content, and keyboard-friendly card interactions.
+This PR improves the Wave 4 runtime reliability surface in `crashlab-core` by:
 
-## What changed
+- adding stable failure classification resolution for replay and taxonomy reporting,
+- wiring single-seed replay through shared bundle persistence and the main CLI,
+- adding configurable time-based retention for run artifacts,
+- and making stale-run detection easier to verify deterministically.
 
-- Updated `RunClusterOverview` to support explicit `loading`, `error`, and `success` states via props.
-- Replaced static health badge text with computed overall cluster health.
-- Added deterministic cluster risk insight generation from live run stats.
-- Added focusable cluster cards with visible keyboard focus treatment.
-- Wired `page.tsx` to always render `RunClusterOverview` and pass through `dataState`, retry callback, and error message.
-- Extended tests in `page.integration.test.ts` and utility-level tests in `add-run-cluster-overview.test.ts` for new state and helper behavior.
+The implementation stays compatible with replay, bundle persistence, and health-oriented runtime flows by preserving legacy persisted bundle signatures while surfacing stable taxonomy classes during replay.
 
-## Design notes
+## What Changed
 
-- State handling is now local to the overview component to keep dashboard wiring simple and predictable.
-- Risk insights avoid placeholder copy and are derived from actual per-area failure/critical distributions.
-- Responsive behavior preserves existing grid breakpoints (`1 / 2 / 4` columns).
+### Failure classification taxonomy
+
+- added `stable_failure_class_for_bundle` so persisted bundles can resolve to stable classes such as `auth`, `budget`, `state`, and `xdr`,
+- kept backward compatibility for legacy bundles that still store `signature.category = "runtime-failure"`,
+- documented and tested the stable class mapping behavior.
+
+### Replay single seed
+
+- expanded replay logic into shared helpers in `replay.rs`,
+- added replay result fields for stable class matching alongside signature matching,
+- routed `replay-single-seed` through the shared persistence/replay path,
+- added `crashlab replay seed <bundle-json-path>` to the main CLI,
+- ensured replay output is deterministic and explicit about class/category/digest/signature hash.
+
+### Run artifact retention
+
+- extended `RetentionPolicy` with retention windows for failures and checkpoints,
+- added `RetentionRecord<T>` to support time-aware pruning,
+- preserved existing count-based retention helpers,
+- added behavior to keep the latest failures pinned while pruning older non-critical artifacts.
+
+### Stale run detector
+
+- added `check_with_elapsed()` for deterministic validation without sleep-heavy tests,
+- preserved `check()` for live runtime polling,
+- kept recovery hints surfaced through `StaleStatus::Stale`.
+
+### Runtime control cleanup
+
+- fixed a pre-existing `run_control.rs` compile break and aligned it with the shared `worker_partition` API so the runtime crate builds and tests cleanly again.
 
 ## Validation
 
-### Targeted checks
+Primary:
 
-- `npx eslint src/app/add-run-cluster-overview.tsx src/app/page.tsx src/app/page.integration.test.ts`
-  - Passes with no errors.
+```bash
+cd contracts/crashlab-core
+cargo test --all-targets
+```
 
-### Repository baseline checks
+Observed result:
 
-- `npm run lint`
-  - Fails due to pre-existing unrelated lint errors in other app modules (e.g. `react-hooks/set-state-in-effect` in `integrate-sentry-integration-for-crash-reporting.tsx` and others).
-- `npm run build`
-  - Fails due to pre-existing unrelated type error: missing `handleReset` in `src/app/add-accessible-keyboard-nav-blueprint-page-49.tsx`.
+- `343` library tests passed
+- `4` `import-corpus` binary tests passed
+- `2` `replay-single-seed` binary tests passed
 
-## Checklist
+Secondary targeted checks maintainers can use:
 
-- [x] Linked issue with `Closes #501`
-- [x] Kept changes focused to Run cluster overview behavior
-- [x] Added/updated tests for primary behavior
-- [x] Preserved existing behavior outside scope
+```bash
+cd contracts/crashlab-core
+cargo test replay::
+cargo test retention::
+cargo test stale_detector::
+cargo test --bin replay-single-seed
+```
+
+## Reviewer Notes
+
+- replay remains compatible with persisted legacy bundles that store `"runtime-failure"` as the signature category,
+- stable taxonomy classes are resolved during replay instead of rewriting old artifact data,
+- retention behavior is now reproducible from explicit timestamps and windows instead of manual guesswork,
+- stale detection behavior can be verified deterministically with explicit elapsed durations.
+
+## Files Changed
+
+- `contracts/crashlab-core/src/taxonomy.rs`
+- `contracts/crashlab-core/src/replay.rs`
+- `contracts/crashlab-core/src/bin/replay-single-seed.rs`
+- `contracts/crashlab-core/src/bin/crashlab.rs`
+- `contracts/crashlab-core/src/retention.rs`
+- `contracts/crashlab-core/src/stale_detector.rs`
+- `contracts/crashlab-core/src/run_control.rs`
+- `contracts/crashlab-core/src/lib.rs`
+- `README.md`
