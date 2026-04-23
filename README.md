@@ -74,7 +74,9 @@ cargo test --all-targets
 
 ### Run checkpoints (resume without redoing work)
 
-Persist a [`RunCheckpoint`](contracts/crashlab-core/src/checkpoint.rs) (JSON) with `next_seed_index` and reload it after an interruption. Use `RunCheckpoint::remaining(&seeds)` to iterate only pending seeds, and `advance_one` / `advance_by` after each completed item so resumed runs skip finished work.
+Persist a [`RunCheckpoint`](contracts/crashlab-core/src/checkpoint.rs) (JSON) with `next_seed_index` and reload it after an interruption. Use `drive_run_from_checkpoint` to resume a single-worker campaign from the first unfinished seed without replaying completed work.
+
+For multi-worker runs, keep a separate checkpoint file per worker and resume with `drive_run_partitioned_from_checkpoint`. Each worker checkpoint stores the next global seed index that worker should inspect, so unowned indices are skipped once and not rescanned after restart.
 
 ### Artifact retention policy
 

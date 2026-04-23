@@ -148,8 +148,10 @@ pub use worker_partition::{WorkerPartition, WorkerPartitionError, worker_for_see
 
 pub mod run_control;
 pub use run_control::{
-    CancelSignal, RunId, RunSummary, RunTerminalState, cancel_marker_path, cancel_requested,
-    clear_cancel_request, default_state_dir, drive_run, drive_run_partitioned, request_cancel_run,
+    CancelSignal, RunId, RunResumeError, RunSummary, RunTerminalState, cancel_marker_path,
+    cancel_requested, clear_cancel_request, default_state_dir, drive_run,
+    drive_run_from_checkpoint, drive_run_partitioned, drive_run_partitioned_from_checkpoint,
+    request_cancel_run,
 };
 
 pub mod rpc_envelope;
