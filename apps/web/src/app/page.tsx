@@ -48,6 +48,7 @@ import AddRunTimeline from './add-run-timeline';
 import OnboardingChecklistModal from './implement-onboarding-checklist-modal-component';
 import FailureClassificationTaxonomy from './add-failure-classification-taxonomy';
 import AddAFuzzyQueryBuilderPage51 from './add-a-fuzzy-query-builder-page-51';
+import AddRunQAChecklist from './add-run-qa-checklist';
 import AddResponsiveLayoutImprovements from './add-responsive-layout-improvements';
 import AddKeyboardNavigationHelp from './add-keyboard-navigation-help';
 import AddRunAnnotations from './add-run-annotations';
@@ -639,6 +640,10 @@ function HomeContent() {
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />
+
+        <div className="mt-12 w-full">
+          <AddRunQAChecklist runs={filteredRuns} />
+        </div>
 
         <div className="mt-12 w-full">
           <ArtifactExplorer />
