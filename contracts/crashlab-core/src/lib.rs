@@ -56,6 +56,8 @@ pub use bundle_persist::{
     read_case_bundle_json, save_case_bundle_json, write_case_bundle_json,
 };
 
+pub mod run_metadata;
+pub use run_metadata::{RunMetadata, MetadataPersistError, RUN_METADATA_SCHEMA_VERSION, SUPPORTED_METADATA_SCHEMAS};
 pub mod artifact_compress;
 pub use artifact_compress::{compress_artifact, decompress_artifact};
 
