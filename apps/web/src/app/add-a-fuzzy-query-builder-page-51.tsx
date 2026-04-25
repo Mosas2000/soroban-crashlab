@@ -172,13 +172,6 @@ export default function AddAFuzzyQueryBuilderPage51({ runs = [] }: Props) {
     setSelectedQueryId(null);
   }, []);
 
-  /* ── Query execution ────────────────────────────────────────────── */
-
-  const filteredRuns = useMemo(() => {
-    if (filters.length === 0) return runs;
-    return runs.filter((run) => filters.every((filter) => applyFilter(run, filter)));
-  }, [runs, filters]);
-
   /* ── Query persistence ──────────────────────────────────────────── */
 
   const saveQuery = useCallback(async () => {
