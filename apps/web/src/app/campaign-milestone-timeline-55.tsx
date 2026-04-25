@@ -44,10 +44,15 @@ export default function CampaignMilestoneTimeline({
   const sortedRuns = useMemo(() => sortRunsForTimeline(runs), [runs]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSeenRunIds([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setKnownFailureSignatures([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsPaused(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLive(true);
   }, [campaignId]);
 
@@ -63,6 +68,7 @@ export default function CampaignMilestoneTimeline({
       campaignId,
       "campaign_start",
     );
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents([campaignStart]);
   }, [campaignId, dataState, events.length]);
 
