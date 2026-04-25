@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { FuzzingRun, RunStatus, RunArea, RunSeverity } from "./types";
+import { buildFailureClusters as buildFailureSignatures, describeFailureCluster } from "./failureClusters";
 
 interface RunClusterVisualizationProps {
   runs?: FuzzingRun[];
@@ -121,7 +122,7 @@ const colorClasses: Record<
   },
 };
 
-type ClusterMode = "status" | "area" | "severity" | "performance";
+type ClusterMode = "status" | "area" | "severity" | "performance" | "failure";
 type ViewMode = "grid" | "bubbles" | "timeline" | "metrics";
 
 const RunClusterVisualization: React.FC<RunClusterVisualizationProps> = ({
@@ -153,6 +154,9 @@ const RunClusterVisualization: React.FC<RunClusterVisualizationProps> = ({
         break;
       case "performance":
         clustersData = buildPerformanceClusters(runsData);
+        break;
+      case "failure":
+        clustersData = buildFailureSignatureClusters(runsData);
         break;
       default:
         clustersData = [];
@@ -288,6 +292,12 @@ const RunClusterVisualization: React.FC<RunClusterVisualizationProps> = ({
               onClick={() => setClusterMode("performance")}
             >
               Performance
+            </ClusterModeButton>
+            <ClusterModeButton
+              active={clusterMode === "failure"}
+              onClick={() => setClusterMode("failure")}
+            >
+              Failures
             </ClusterModeButton>
           </div>
 
@@ -736,6 +746,35 @@ function buildPerformanceClusters(runs: FuzzingRun[]): RunCluster[] {
 }
 
 /**
+ * Build clusters grouped by failure signatures.
+ */
+function buildFailureSignatureClusters(runs: FuzzingRun[]): RunCluster[] {
+  const failureClusters = buildFailureSignatures(runs);
+
+  return failureClusters.map((fc) => ({
+    id: fc.id,
+    label: fc.failureCategory,
+    runs: runs.filter((r) => fc.relatedRunIds.includes(r.id)),
+    color: SEVERITY_CONFIG[fc.severity].color,
+    icon: SEVERITY_CONFIG[fc.severity].icon,
+    avgDuration: 0, // Could be computed if needed
+    avgCpuInstructions: 0,
+    avgMemoryBytes: 0,
+    failureRate: 100,
+  })).map(cluster => {
+    // Fill in metrics
+    if (cluster.runs.length === 0) return cluster;
+    
+    return {
+      ...cluster,
+      avgDuration: cluster.runs.reduce((sum, r) => sum + r.duration, 0) / cluster.runs.length,
+      avgCpuInstructions: cluster.runs.reduce((sum, r) => sum + r.cpuInstructions, 0) / cluster.runs.length,
+      avgMemoryBytes: cluster.runs.reduce((sum, r) => sum + r.memoryBytes, 0) / cluster.runs.length,
+    };
+  });
+}
+
+/**
  * View mode button component.
  */
 const ViewModeButton: React.FC<{
@@ -1094,18 +1133,29 @@ function buildMockClusters(seed = 123456): FuzzingRun[] {
 
   const rng = mulberry32(seed);
 
-  return Array.from({ length: 25 }, (_, i) => ({
-    id: `run-${1000 + i}`,
-    status: ["running", "completed", "failed", "cancelled"][i % 4] as RunStatus,
-    area: ["auth", "state", "budget", "xdr"][i % 4] as RunArea,
-    severity: ["low", "medium", "high", "critical"][i % 4] as RunSeverity,
-    duration: Math.round(120000 + rng() * 3600000),
-    seedCount: Math.floor(10000 + rng() * 90000),
-    crashDetail: null,
-    cpuInstructions: Math.floor(400000 + rng() * 900000),
-    memoryBytes: Math.floor(1_500_000 + rng() * 8_000_000),
-    minResourceFee: Math.floor(500 + rng() * 5000),
-  }));
+  return Array.from({ length: 25 }, (_, i) => {
+    const status = ["running", "completed", "failed", "cancelled"][i % 4] as RunStatus;
+    const area = ["auth", "state", "budget", "xdr"][i % 4] as RunArea;
+    const severity = ["low", "medium", "high", "critical"][i % 4] as RunSeverity;
+    
+    return {
+      id: `run-${1000 + i}`,
+      status,
+      area,
+      severity,
+      duration: Math.round(120000 + rng() * 3600000),
+      seedCount: Math.floor(10000 + rng() * 90000),
+      crashDetail: status === "failed" ? {
+        failureCategory: area.charAt(0).toUpperCase() + area.slice(1),
+        signature: `sig:${1000 + i}:${area}::crash`,
+        payload: "{}",
+        replayAction: "cargo run",
+      } : null,
+      cpuInstructions: Math.floor(400000 + rng() * 900000),
+      memoryBytes: Math.floor(1_500_000 + rng() * 8_000_000),
+      minResourceFee: Math.floor(500 + rng() * 5000),
+    };
+  });
 }
 
 export default RunClusterVisualization;
