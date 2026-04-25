@@ -1029,9 +1029,7 @@ function HomeContent() {
             />
           </div>
 
-          <div className="mb-12 w-full">
-            <AddRunComparisonCharts runs={filteredRuns} />
-          </div>
+
 
           <div className="mb-12 w-full">
             <RunClusterVisualization
