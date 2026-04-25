@@ -64,6 +64,7 @@ import BulkActionsForRuns, { BulkAction } from "./add-bulk-actions-for-runs";
 import AddDownloadableRunArtifactBundle from "./add-downloadable-run-artifact-bundle";
 import CampaignConfigForm from "./CampaignConfigForm";
 import { CampaignConfig } from "./types";
+import ResourceFeeInsightPanel from "./implement-resource-fee-insight-panel-component";
 
 // Mock data for demonstration
 const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
@@ -1032,6 +1033,10 @@ function HomeContent() {
 
           <div className="mb-12 w-full">
             <AddRunComparisonCharts runs={filteredRuns} />
+          </div>
+
+          <div className="mb-12 w-full">
+            <ResourceFeeInsightPanel runs={filteredRuns} />
           </div>
 
           <div className="mb-12 w-full">
