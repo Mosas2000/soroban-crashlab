@@ -58,6 +58,7 @@ export default function IntegrateSentryIntegrationForCrashReporting() {
 
   useEffect(() => {
     // Simulate loading recent reports
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecentReports([
       {
         id: "crash-001",

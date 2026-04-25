@@ -363,9 +363,11 @@ function HomeContent() {
     if (reportRunId && !reportRun) {
       const run = runs.find(r => r.id === reportRunId);
       if (run) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setReportRun(run);
       } else if (dataState === "success") {
         // Clear param if run not found after data loaded
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQueryState({ report: null });
       }
     }
