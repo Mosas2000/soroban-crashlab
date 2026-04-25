@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import { useEffect, useMemo, useState } from "react";
 import type { FuzzingRun } from "./types";
@@ -34,7 +35,9 @@ export default function CampaignMilestoneTimeline({
   maxEventsDisplayed = 10,
 }: CampaignMilestoneTimelineProps) {
   const [events, setEvents] = useState<MilestoneEvent[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [seenRunIds, setSeenRunIds] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [knownFailureSignatures, setKnownFailureSignatures] = useState<
     string[]
   >([]);

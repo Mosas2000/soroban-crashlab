@@ -101,6 +101,7 @@ export default function CrashTrendPage() {
             Filter by area, severity, and specific signatures to focus on
             trends that matter.
           </p>
+          </div>
         </div>
 
         {/* No data state */}

@@ -296,6 +296,7 @@ mod tests {
     #[test]
     fn all_contains_nine_variants() {
         assert_eq!(FailureClass::ALL.len(), 9);
+        assert!(FailureClass::ALL.contains(&FailureClass::Unknown));
     }
 
     #[test]

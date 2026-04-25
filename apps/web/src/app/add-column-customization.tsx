@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export type ColumnId = 'id' | 'status' | 'duration' | 'seedCount' | 'report';
 

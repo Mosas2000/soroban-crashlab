@@ -236,7 +236,6 @@ describe('Accessible Keyboard Navigation Blueprint', () => {
     });
 
     it('should have labels for all form inputs', () => {
-      const inputMatches = pageContent.match(/<input/g) || [];
       const labelMatches = pageContent.match(/<label/g) || [];
       // Should have at least as many labels as inputs (some inputs may be in label)
       expect(labelMatches.length).toBeGreaterThan(0);
@@ -254,7 +253,6 @@ describe('Accessible Keyboard Navigation Blueprint', () => {
 
     it('should not have placeholder-only labels', () => {
       // All inputs should have proper labels, not just placeholders
-      const inputsWithPlaceholder = pageContent.match(/placeholder=/g) || [];
       const labelsForInputs = pageContent.match(/<label[^>]*htmlFor=/g) || [];
       expect(labelsForInputs.length).toBeGreaterThan(0);
     });

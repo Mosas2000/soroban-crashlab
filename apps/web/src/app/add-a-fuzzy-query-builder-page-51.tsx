@@ -76,7 +76,7 @@ function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 function applyFilter(run: FuzzingRun, filter: QueryFilter): boolean {
-  const value = getNestedValue(run, filter.field);
+  const value = getNestedValue(run as unknown as Record<string, unknown>, filter.field);
 
   switch (filter.operator) {
     case 'equals':
@@ -171,13 +171,6 @@ export default function AddAFuzzyQueryBuilderPage51({ runs = [] }: Props) {
     setFilters([]);
     setSelectedQueryId(null);
   }, []);
-
-  /* ── Query execution ────────────────────────────────────────────── */
-
-  const filteredRuns = useMemo(() => {
-    if (filters.length === 0) return runs;
-    return runs.filter((run) => filters.every((filter) => applyFilter(run, filter)));
-  }, [runs, filters]);
 
   /* ── Query persistence ──────────────────────────────────────────── */
 

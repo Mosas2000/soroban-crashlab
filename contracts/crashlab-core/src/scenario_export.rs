@@ -141,6 +141,8 @@ pub fn export_suite_json(
         a.seed_id
             .cmp(&b.seed_id)
             .then_with(|| a.failure_class.cmp(&b.failure_class))
+            .then_with(|| a.input_payload.cmp(&b.input_payload))
+            .then_with(|| a.mode.cmp(&b.mode))
     });
     serde_json::to_string_pretty(&scenarios)
 }

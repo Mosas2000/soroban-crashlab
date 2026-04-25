@@ -55,13 +55,18 @@ pub use decimal_precision::{
 pub mod bundle_persist;
 pub use bundle_persist::{
     BundlePersistError, CASE_BUNDLE_SCHEMA_VERSION, CaseBundleDocument, SUPPORTED_BUNDLE_SCHEMAS,
-    read_case_bundle_json, save_case_bundle_json, write_case_bundle_json,
+    load_case_bundle_json, read_case_bundle_json, save_case_bundle_json, write_case_bundle_json,
 };
 
 pub mod run_metadata;
 pub use run_metadata::{RunMetadata, MetadataPersistError, RUN_METADATA_SCHEMA_VERSION, SUPPORTED_METADATA_SCHEMAS};
 pub mod artifact_compress;
 pub use artifact_compress::{compress_artifact, decompress_artifact};
+
+pub mod artifact_storage;
+pub use artifact_storage::{
+    ArtifactMetadata, ArtifactStore, LocalArtifactStore, StorageConfig, StorageError,
+};
 
 pub mod fixture_compat;
 pub use fixture_compat::{CompatReport, CompatWarning, check_bundle_fixtures, check_seed_fixtures};
@@ -124,7 +129,7 @@ pub use regression_grouping::{
 
 pub mod simulation;
 pub use simulation::{
-    RunMetadataError,
+    RunMetadataError, SUPPORTED_RUN_METADATA_SCHEMAS,
     SimulationTimeoutConfig, load_run_metadata_json, run_simulation_with_timeout,
     save_run_metadata_json, timeout_crash_signature,
 };

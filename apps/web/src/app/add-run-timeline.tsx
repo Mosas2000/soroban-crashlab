@@ -33,7 +33,7 @@ export default function AddRunTimeline({ runs, onSelectRun }: RunTimelineProps) 
       .sort((a, b) => new Date(a.startedAt!).getTime() - new Date(b.startedAt!).getTime());
   }, [runs]);
 
-  const { minTime, maxTime, timeRange } = useMemo(() => {
+  const { minTime, timeRange } = useMemo(() => {
     if (timelineRuns.length === 0) return { minTime: 0, maxTime: 0, timeRange: 0 };
 
     const startTimes = timelineRuns.map(r => new Date(r.startedAt!).getTime());
@@ -51,7 +51,6 @@ export default function AddRunTimeline({ runs, onSelectRun }: RunTimelineProps) 
     
     return {
       minTime: min - padding,
-      maxTime: max + padding,
       timeRange: range + (padding * 2)
     };
   }, [timelineRuns]);
