@@ -62,6 +62,7 @@ import NotificationCenter from "./add-notification-center-ui";
 import BulkActionsForRuns, { BulkAction } from "./add-bulk-actions-for-runs";
 import AddDownloadableRunArtifactBundle from "./add-downloadable-run-artifact-bundle";
 import CampaignConfigForm from "./CampaignConfigForm";
+import ContributorSLATargets from "./ContributorSLATargets";
 import { CampaignConfig } from "./types";
 import ResourceFeeInsightPanel from "./implement-resource-fee-insight-panel-component";
 
@@ -743,7 +744,11 @@ function HomeContent() {
             )}
           </div>
 
-          <div id="recent-runs" className="w-full mb-8 scroll-mt-8">
+    <div className="w-full mb-20 border-t border-zinc-100 dark:border-zinc-800 pt-20">
+      <ContributorSLATargets />
+    </div>
+
+    <div id="recent-runs" className="w-full mb-8 scroll-mt-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Recent Fuzzing Runs</h2>
               <div className="flex items-center gap-3">
