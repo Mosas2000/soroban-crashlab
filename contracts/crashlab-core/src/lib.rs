@@ -6,7 +6,10 @@ pub mod retry;
 pub mod signature_hash;
 pub mod taxonomy;
 
-pub use auth_matrix::{AuthMode, MatrixReport, ModeResult, collect_mismatched, run_matrix};
+pub use auth_matrix::{
+    AuthMode, MatrixReport, ModeResult, collect_mismatched, format_mismatch_summary, run_matrix,
+    run_matrix_for_seeds,
+};
 pub use health::{
     FailureMetrics, HealthMonitor, HealthStatus, HealthSummary, QueueMetrics, ThroughputMetrics,
 };
@@ -69,7 +72,10 @@ pub use artifact_storage::{
 };
 
 pub mod fixture_compat;
-pub use fixture_compat::{CompatReport, CompatWarning, check_bundle_fixtures, check_seed_fixtures};
+pub use fixture_compat::{
+    CompatReport, CompatWarning, check_bundle_fixtures, check_bundle_signature_hashes,
+    check_manifest_engine_schema, check_seed_fixtures, check_seed_sanitization,
+};
 
 pub mod fixture_manifest;
 pub use fixture_manifest::{
@@ -89,9 +95,13 @@ pub use signature_comparison::{
 
 pub mod fixture_sanitize;
 pub use fixture_sanitize::{
-    export_sanitized_scenario_json, sanitize_bundle_document_for_sharing,
-    sanitize_bundle_for_sharing, sanitize_payload_fragments, sanitize_seed_for_sharing,
+    export_sanitized_scenario_json, export_sanitized_suite_json,
+    sanitize_and_validate_bundle, sanitize_bundle_document_for_sharing,
+    sanitize_bundle_for_sharing, sanitize_bundle_with_context, sanitize_payload_fragments,
+    sanitize_payload_with_context, sanitize_seed_for_sharing, sanitize_seed_with_context,
     sanitized_failure_scenario, save_sanitized_case_bundle_json,
+    RedactionStrategy, SanitizationContext, SanitizationError, SanitizationReport,
+    SanitizationRule,
 };
 
 pub mod checkpoint;
