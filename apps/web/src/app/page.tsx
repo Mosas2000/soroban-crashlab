@@ -64,7 +64,7 @@ import AddDownloadableRunArtifactBundle from "./add-downloadable-run-artifact-bu
 import CampaignConfigForm from "./CampaignConfigForm";
 import ContributorSLATargets from "./ContributorSLATargets";
 import { CampaignConfig } from "./types";
-import ResourceFeeInsightPanel from "./implement-resource-fee-insight-panel-component";
+import { ResourceFeeInsightPanel } from "./implement-resource-fee-insight-panel-component";
 
 // Mock data for demonstration
 const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
