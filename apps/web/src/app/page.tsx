@@ -65,6 +65,7 @@ import CampaignConfigForm from "./CampaignConfigForm";
 import ContributorSLATargets from "./ContributorSLATargets";
 import { CampaignConfig } from "./types";
 import ResourceFeeInsightPanel from "./implement-resource-fee-insight-panel-component";
+import AdvancedDashboardFilters, { DashboardFilters } from "./create-advanced-dashboard-filters-page";
 
 // Mock data for demonstration
 const MOCK_RUNS: FuzzingRun[] = Array.from({ length: 25 }, (_, i) => ({
@@ -166,6 +167,16 @@ function HomeContent() {
   ]);
   const [selectedRunIds, setSelectedRunIds] = useState<Set<string>>(new Set());
   const [showCampaignConfig, setShowCampaignConfig] = useState(false);
+  const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
+    status: [],
+    area: [],
+    severity: [],
+    dateRange: { start: '', end: '' },
+    durationRange: { min: 0, max: 0 },
+    resourceFeeRange: { min: 0, max: 0 },
+    hasCrash: null,
+    searchTerm: '',
+  });
 
   const handleToggleRunSelection = useCallback((runId: string) => {
     setSelectedRunIds(prev => {
@@ -465,6 +476,23 @@ function HomeContent() {
       setCopyState("failed");
     }
   }, [pathname, searchParams]);
+
+  const handleDashboardFiltersChange = useCallback((filters: DashboardFilters) => {
+    setDashboardFilters(filters);
+  }, []);
+
+  const handleDashboardFiltersReset = useCallback(() => {
+    setDashboardFilters({
+      status: [],
+      area: [],
+      severity: [],
+      dateRange: { start: '', end: '' },
+      durationRange: { min: 0, max: 0 },
+      resourceFeeRange: { min: 0, max: 0 },
+      hasCrash: null,
+      searchTerm: '',
+    });
+  }, []);
 
   useEffect(() => {
     if (copyState === "idle") return;
@@ -775,6 +803,14 @@ function HomeContent() {
               </div>
             </div>
 
+            <AdvancedDashboardFilters
+              filters={dashboardFilters}
+              onFiltersChange={handleDashboardFiltersChange}
+              onReset={handleDashboardFiltersReset}
+              isLoading={dataState === 'loading'}
+              error={dataState === 'error' ? 'Failed to load filters' : null}
+            />
+
             <div className="mb-4 flex flex-col md:flex-row md:items-center gap-3">
               <label className="flex items-center gap-2 text-sm">
                 <span className="text-zinc-600 dark:text-zinc-400">Status</span>
@@ -1052,6 +1088,9 @@ function HomeContent() {
           <div className="mb-12 w-full">
             <RunClusterVisualization
               runs={filteredRuns}
+              dataState={dataState}
+              onRetry={() => setFetchAttempt((n) => n + 1)}
+              errorMessage="Cluster visualization diagnostics are temporarily unavailable."
               onRunSelect={handleOpenRunDrawer}
               showTimeline={true}
               showMetrics={true}
