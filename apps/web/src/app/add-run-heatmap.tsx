@@ -20,7 +20,7 @@ export default function RunHeatmap({
     }
 
     let values: number[] = [];
-    let extractValue = (): number => 0;
+    let extractValue = (r: FuzzingRun) => 0;
 
     switch (metric) {
       case 'cpu':
@@ -97,7 +97,7 @@ export default function RunHeatmap({
   }[metric];
 
   const groupedByArea = useMemo(() => {
-    const groups: Map<RunArea, typeof heatmapData> = new Map();
+    const groups: Map<RunArea, Array<typeof heatmapData[number]>> = new Map();
     heatmapData.forEach(item => {
       if (!groups.has(item.area)) {
         groups.set(item.area, []);

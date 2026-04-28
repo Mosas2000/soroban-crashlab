@@ -53,7 +53,7 @@ export async function GET(
     }
 
     // Return the artifact as a download
-    return new NextResponse(artifact.buffer as Uint8Array, {
+    return new NextResponse(artifact.buffer as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/octet-stream',

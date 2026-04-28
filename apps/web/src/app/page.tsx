@@ -66,7 +66,7 @@ import AddDownloadableRunArtifactBundle from "./add-downloadable-run-artifact-bu
 import CampaignConfigForm from "./CampaignConfigForm";
 import ContributorSLATargets from "./ContributorSLATargets";
 import { CampaignConfig } from "./types";
-import ResourceFeeInsightPanel from "./implement-resource-fee-insight-panel-component";
+import { ResourceFeeInsightPanel } from "./implement-resource-fee-insight-panel-component";
 import AdvancedDashboardFilters, { DashboardFilters } from "./create-advanced-dashboard-filters-page";
 
 // Mock data for demonstration
